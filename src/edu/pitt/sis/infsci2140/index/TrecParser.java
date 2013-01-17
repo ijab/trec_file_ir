@@ -43,7 +43,7 @@ public class TrecParser {
 	private static final String DOC_NO_TAG_NAME = "DOCNO";
 	private static final String DOC_CONTENT_TAG_NAME = "TEXT";
 	private static final String HDR_TAG_NAME = "DOCHDR";
-	private static final int BUFFER_SIZE = 20000*1024;
+	private static final int BUFFER_SIZE = 8*1024;
 	
 	private enum STATE {OUTDOC, STARTDOC, STARTEL, INDOC, ENDDOC, ENDEL, STARTHDR, ENDHDR};
 	private STATE state = STATE.OUTDOC;
