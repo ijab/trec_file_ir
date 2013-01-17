@@ -15,7 +15,6 @@ public class TextTokenizer {
 	public TextTokenizer( char[] texts ) {
 		// this constructor will tokenize the input texts (usually it is a char array for a whole document)
 		String content = new String(texts);
-		//words = content.split("\\s+");
 		words = regex_ws.split(content);
 		size = words.length;
 	}
