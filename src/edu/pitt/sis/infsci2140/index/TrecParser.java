@@ -53,7 +53,7 @@ public class TrecParser {
 	private Map<String, Object> doc = null;
 
 	// Debug related params
-	private boolean DEBUG = true;
+	private boolean DEBUG = false;
 	private long start_time;
 	private long end_time;
 	
@@ -94,8 +94,8 @@ public class TrecParser {
 			if(DEBUG)
 			{
 				System.out.println("Finished handling " + docs_count + " docs in " 
-								+ (end_time-start_time)/1000 + "s at " + current_datetime() );
-			}
+								+ (end_time-start_time)/1000 + "s at " + current_datetime());
+			}			
 		}
 		return doc;
 	}
@@ -147,7 +147,16 @@ public class TrecParser {
 								if(tag.compareToIgnoreCase(DOC_CONTENT_TAG_NAME) == 0)
 									set_value("CONTENT", list_to_char_array(l_char));
 								else
-									set_value(tag, new String(list_to_char_array(l_char)));
+								{
+									String _v_of_tag = new String(list_to_char_array(l_char));
+									if(tag.compareToIgnoreCase(DOC_NO_TAG_NAME) == 0)
+									{
+										// Trim the value
+										_v_of_tag = _v_of_tag.trim();
+										_v_of_tag = _v_of_tag.replaceAll("\r\n|\n|\r", "");
+									}
+									set_value(tag, _v_of_tag);
+								}
 							}
 							l_char.clear();
 						}
@@ -214,11 +223,11 @@ public class TrecParser {
 						state = STATE.STARTDOC;
 						doc_state = STATE.INDOC;
 						
+						docs_count++;
 						if(DEBUG == true)
 						{
-							System.out.println(current_datetime() + " Handle document " + docs_count);
-							docs_count++;
-						}
+							System.out.println(current_datetime() + " Handle document " + docs_count);							
+						}						
 					}
 				}
 				else if(_tag.compareToIgnoreCase(HDR_TAG_NAME) == 0)

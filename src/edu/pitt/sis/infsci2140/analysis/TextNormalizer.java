@@ -11,13 +11,7 @@ public class TextNormalizer {
 			{
 				chars[i] = (char)(chars[i] + 32);
 			}
-		}		
-		/*
-		String strch = new String(chars);
-		strch = strch.toLowerCase();		
-		
-		return strch.toCharArray();
-		*/
+		}
 		return chars;
 	}	
 }
