@@ -6,8 +6,10 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.RandomAccessFile;
+import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -38,10 +40,6 @@ public class MyIndexReader {
 	public MyIndexReader( File dir ) throws IOException {
 		this.dir = dir;
 		
-		this.term_index_raf = new RandomAccessFile(this.dir.getAbsolutePath() + File.separator + TERM_INDEX_FILE, "r");
-		this.term_index_is = new FileInputStream(this.term_index_raf.getFD());
-		this.term_index_ois = new DataInputStream( new BufferedInputStream(
-				this.term_index_is));
 		this.term_index_alpha_is = new ObjectInputStream(
 								new BufferedInputStream(
 										new FileInputStream(this.dir.getAbsolutePath() + File.separator + TERM_ALPHABET_INDEX_FILE)));
@@ -176,10 +174,47 @@ public class MyIndexReader {
 		this.file_docno_id_map.close();
 		this.file_docid_no_map.close();
 		
-		this.term_index_ois.close();
+		if(this.term_index_ois != null) this.term_index_ois.close();
 		this.term_index_alpha_is.close();		
 	}
 	
+	public void re_open_index() throws IOException
+	{
+		if(this.term_index_ois != null) this.term_index_ois.close();
+		
+		this.term_index_raf = new RandomAccessFile(this.dir.getAbsolutePath() + File.separator + TERM_INDEX_FILE, "r");
+		this.term_index_is = new FileInputStream(this.term_index_raf.getFD());
+		this.term_index_ois = new DataInputStream( new BufferedInputStream(
+				this.term_index_is));
+		
+	}
+	
+	/**
+	 * get_doc_count from Doc No. & ID mapping file
+	 * @return
+	 * @throws IOException
+	 */
+	public int get_doc_count() throws IOException {
+		int doc_count = 0;
+        InputStream is = new BufferedInputStream(new FileInputStream(this.dir.getAbsolutePath() + File.separator + DOCID_NO_MAP_FILE));
+	    
+        try {
+	        byte[] c = new byte[1024];
+	        int readed_chars = 0;
+	        boolean is_empty_file = true;
+	        while ((readed_chars = is.read(c)) != -1) {
+	        	is_empty_file = false;
+	            for (int i = 0; i < readed_chars; ++i) {
+	                if (c[i] == '\n')
+	                    ++doc_count;
+	            }
+	        }
+	        return (doc_count == 0 && !is_empty_file) ? 1 : doc_count;
+	    } finally {
+	        is.close();	        
+	    }
+
+	}
 	/**
 	 *  Try to locate the TermObject in inverted idnex file by token
 	 * @param token
@@ -223,7 +258,12 @@ public class MyIndexReader {
 			long offset = this.term_header.getPosition(f_c);
 			if(offset > -1) // This letter is indexed in inverted index file
 			{
+				// Reopen index file to release buffer from last query
+				this.re_open_index();
+				
+				
 				// Try to search this token in inverted index file
+				this.term_index_raf.seek(0);
 				this.term_index_raf.seek(offset);
 				
 				while(true)
@@ -240,7 +280,7 @@ public class MyIndexReader {
 						if(find_term.compareTo(token) == 0)
 						{
 							this.term_dict.put(token, _to);
-							break;
+							return _to;
 						}
 						else
 						{
@@ -251,6 +291,10 @@ public class MyIndexReader {
 							}
 						}
 					} 
+					catch(StreamCorruptedException e)
+					{
+						e.printStackTrace();
+					}
 					catch (ClassNotFoundException e) 
 					{
 						e.printStackTrace();
@@ -263,7 +307,7 @@ public class MyIndexReader {
 			}
 		}
 		
-		return _to;
+		return null;
 	}
 	
 }

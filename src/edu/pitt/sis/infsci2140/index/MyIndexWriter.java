@@ -42,6 +42,8 @@ public class MyIndexWriter {
 	protected File dir;
 	protected StopwordsRemover stoprmv = null;
 	
+	private boolean is_remove_stopwords = false;
+	
 	private static final String TERM_INDEX_FILE = "trec_index.dat";
 	private static final String TERM_ALPHABET_INDEX_FILE = "trec_index.idx";
 	private static final String DOCNO_ID_MAP_FILE = "trec_docno_id_mapping.dat";
@@ -107,7 +109,7 @@ public class MyIndexWriter {
 		}
 		while( ( word=tokenizer.nextWord() ) != null ) { // iteratively loading each word from the document
 			word = TextNormalizer.normalize(word); // normalize each word
-			if( !stoprmv.isStopword(word) )
+			if( !this.is_remove_stopwords || !stoprmv.isStopword(word) )
 			{
 				// if the word is not a stopword, cope with it
 				create_term_index(new String(word), doc_id, word_pos);
@@ -120,6 +122,14 @@ public class MyIndexWriter {
 			System.out.println("Finished indexing doc " + docno + " at " + current_datetime());
 		}
 		
+	}
+	
+	/**
+	 * set remove stop words or not
+	 */
+	public void set_is_remove_stopwords(boolean _remove)
+	{
+		this.is_remove_stopwords = _remove;
 	}
 	
 	/**
