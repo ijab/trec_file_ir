@@ -40,6 +40,9 @@ public class MyIndexReader {
 	public MyIndexReader( File dir ) throws IOException {
 		this.dir = dir;
 		
+		this.term_index_raf = new RandomAccessFile(this.dir.getAbsolutePath() + File.separator + TERM_INDEX_FILE, "r");
+		this.term_index_is = new FileInputStream(this.term_index_raf.getFD());
+		
 		this.term_index_alpha_is = new ObjectInputStream(
 								new BufferedInputStream(
 										new FileInputStream(this.dir.getAbsolutePath() + File.separator + TERM_ALPHABET_INDEX_FILE)));
@@ -178,12 +181,11 @@ public class MyIndexReader {
 		this.term_index_alpha_is.close();		
 	}
 	
-	public void re_open_index() throws IOException
+	public void reset_index_buffered_reader() throws IOException
 	{
-		if(this.term_index_ois != null) this.term_index_ois.close();
+		this.term_index_is.getChannel().position(0);
+		this.term_index_raf.seek(0);
 		
-		this.term_index_raf = new RandomAccessFile(this.dir.getAbsolutePath() + File.separator + TERM_INDEX_FILE, "r");
-		this.term_index_is = new FileInputStream(this.term_index_raf.getFD());
 		this.term_index_ois = new DataInputStream( new BufferedInputStream(
 				this.term_index_is));
 		
@@ -259,8 +261,7 @@ public class MyIndexReader {
 			if(offset > -1) // This letter is indexed in inverted index file
 			{
 				// Reopen index file to release buffer from last query
-				this.re_open_index();
-				
+				this.reset_index_buffered_reader();
 				
 				// Try to search this token in inverted index file
 				this.term_index_raf.seek(0);

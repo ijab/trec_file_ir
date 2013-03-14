@@ -25,22 +25,21 @@ public class TextTokenizer {
 			if(Character.isAlphabetic(texts[ix]) || texts[ix] == '-')
 			{
 				a_word.add(texts[ix]);
+				if(ix == len - 1)
+				{
+					this.add_word(a_word);
+					a_word.clear();
+					break;
+				}
 			}
 			else
 			{
-				if(a_word.size() > 0)
-				{
-					String w = "";
-					for(int j = 0; j < a_word.size(); ++j)
-						w += a_word.get(j);
-					
-					words.add(w);
-					a_word.clear();
-				}
+				this.add_word(a_word);
+				a_word.clear();
 			}
 		}
 		
-		size = words.size();
+		this.size = this.words.size();
 	}
 	
 	// YOU MUST IMPLEMENT THIS METHOD
@@ -56,4 +55,19 @@ public class TextTokenizer {
 		return ret_v;
 	}
 	
+	/**
+	 * 
+	 * @param a_word
+	 */
+	private void add_word(List<Character> a_word)
+	{
+		if(a_word.size() > 0)
+		{
+			String w = "";
+			for(int j = 0; j < a_word.size(); ++j)
+				w += a_word.get(j);
+			
+			this.words.add(w);
+		}
+	}
 }

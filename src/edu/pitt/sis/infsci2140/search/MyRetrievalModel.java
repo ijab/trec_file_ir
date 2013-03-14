@@ -286,7 +286,7 @@ public class MyRetrievalModel {
             bufferedWriter.newLine();
             
             // Output the document number of each term's query
-            bufferedWriter.write("===================================================");
+            bufferedWriter.write("\n===============Term's Result===============");
             bufferedWriter.newLine();
             Set<String> terms = this.s_results.keySet();
             Iterator it = terms.iterator();
@@ -298,11 +298,41 @@ public class MyRetrievalModel {
             	int num_docs = this.s_results.get(term) == null ? 0 : this.s_results.get(term).getPostings().size();
             	bufferedWriter.write(String.valueOf(num_docs));
             	bufferedWriter.write(" documents returned.\t");
+            	bufferedWriter.newLine();
             }
-            bufferedWriter.write("\n===================================================");
+            bufferedWriter.write("===================================================\n");
             bufferedWriter.newLine();
             
-            // Write out search results
+            // Output search result of Boolean Model
+            bufferedWriter.write("============Boolean Model Result================");
+            bufferedWriter.newLine();
+            
+            it = terms.iterator();
+            if(it.hasNext())
+            {
+            	TermObject _t_obj = this.s_inter_result.get((String)it.next());
+            	if(_t_obj != null)
+            	{
+            		Set<Integer> docs_id = _t_obj.getPostings().keySet();
+            	
+	            	Iterator doc_it = docs_id.iterator();
+	            	while(doc_it.hasNext())
+	            	{
+	            		Integer doc_id = (Integer)doc_it.next();
+	            		bufferedWriter.write(String.valueOf(doc_id));
+	                	bufferedWriter.write('\t');
+	                	bufferedWriter.write(this.ixreader.getDocno(doc_id));
+	                	
+	                	// new line
+	                	bufferedWriter.newLine();
+	            	}
+            	}
+            }	
+            
+            // Output search result of Vector Model
+            bufferedWriter.write("\n==============Vector Model Result================");
+            bufferedWriter.newLine();
+            
             for(int i = 0; i < this.lsr.size(); ++i)
             {
             	SearchResult sr = this.lsr.get(i);
@@ -315,8 +345,7 @@ public class MyRetrievalModel {
             	
             	// new line
             	bufferedWriter.newLine();
-            }
-            
+            }           
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
         } catch (IOException ex) {
